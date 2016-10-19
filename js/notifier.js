@@ -2,7 +2,6 @@
 
 class Notifier {
   notifyMe(message) {
-    console.log("msg")
     // Проверка поддерживаемости браузером уведомлений
     if (!("Notification" in window)) {
       alert("This browser does not support desktop notification");

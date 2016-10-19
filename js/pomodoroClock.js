@@ -1,6 +1,6 @@
 "use strict";
 
-function PomodoroClock({elem, notifier, domManipulator, countDown}) {
+function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}) {
   let showTime = elem.querySelector(".js-show-time");
   let showBreak = elem.querySelector(".js-show-break");
   let showCounterTime = elem.querySelector(".js-counter-time");
@@ -30,8 +30,8 @@ function PomodoroClock({elem, notifier, domManipulator, countDown}) {
   showCounterTime.innerHTML = timeLength;
 
 
-  let setTimeLengthShowTime = setTimeLengthDecoratorShowResult(setTimeLength, showTime);
-  let setTimeLengthShowBreak = setTimeLengthDecoratorShowResult(setTimeLength, showBreak);
+  let setTimeLengthForShowTime = bindShifterValueToElem(shifterValue.set, showTime);
+  let setTimeLengthForShowBreak = bindShifterValueToElem(shifterValue.set, showBreak);
 
 
   let BreakRun = getTimeMinusOneSecond( getStartTime(TIME, breakLength) );
@@ -71,10 +71,14 @@ function PomodoroClock({elem, notifier, domManipulator, countDown}) {
     while(target !== e.currentTarget) {
 
       if (target.classList.contains('js-plus-time')) {
-        if (isTikTak) {return};
-        timeLength = setTimeLengthShowTime(timeLength, "plus");
+        if (isTikTak) {
+          return;
+        };
+
+        timeLength = setTimeLengthForShowTime(timeLength, "up");
+
         resetTimeTime();
-        // console.log(timersStack[0].name);
+
         if (timersStack[0].name === "timerTime") {
           timersStack.pop();
           timersStack.push(timerTime);
@@ -84,10 +88,14 @@ function PomodoroClock({elem, notifier, domManipulator, countDown}) {
       }
 
       if (target.classList.contains('js-minus-time')) {
-        if (isTikTak) {return};
-        timeLength = setTimeLengthShowTime(timeLength, "minus");
+        if (isTikTak) {
+          return;
+        };
+
+        timeLength = setTimeLengthForShowTime(timeLength, "down");
+
         resetTimeTime();
-        // console.log(timersStack[0].name);
+
         if (timersStack[0].name === "timerTime") {
           timersStack.pop();
           timersStack.push(timerTime);
@@ -97,10 +105,14 @@ function PomodoroClock({elem, notifier, domManipulator, countDown}) {
       }
 
       if (target.classList.contains('js-plus-break')) {
-        if (isTikTak) {return};
-        breakLength = setTimeLengthShowBreak(breakLength, "plus");
+        if (isTikTak) {
+          return;
+        };
+
+        breakLength = setTimeLengthForShowBreak(breakLength, "up");
+
         resetTimeBreak();
-        // console.log(timersStack[0].name);
+
         if (timersStack[0].name === "timerBreak") {
           timersStack.pop();
           timersStack.push(timerBreak);
@@ -110,10 +122,14 @@ function PomodoroClock({elem, notifier, domManipulator, countDown}) {
       }
 
       if (target.classList.contains('js-minus-break')) {
-        if (isTikTak) {return};
-        breakLength = setTimeLengthShowBreak(breakLength, "minus");
+        if (isTikTak) {
+          return;
+        };
+
+        breakLength = setTimeLengthForShowBreak(breakLength, "down");
+
         resetTimeBreak();
-        // console.log(timersStack[0].name);
+
         if (timersStack[0].name === "timerBreak") {
           timersStack.pop();
           timersStack.push(timerBreak);
@@ -123,7 +139,9 @@ function PomodoroClock({elem, notifier, domManipulator, countDown}) {
       }
 
       if (target.classList.contains('js-counter')) {
-        if (isDone) return;
+        if (isDone) {
+          return;
+        };
 
         if (isTikTak) {
           pauseAudio.play();
@@ -159,21 +177,13 @@ function PomodoroClock({elem, notifier, domManipulator, countDown}) {
     timerBreak.name = "timerBreak";
   }
 
-  function setTimeLength(value, expr) {
-    // console.log(value);
-    if (expr === "plus") return ++value;
-    if (expr === "minus" && value === 1) {
-      return 1;
-    } else {
-      return --value;
-    }
-  }
-
-  function setTimeLengthDecoratorShowResult(f, elem) {
+  function bindShifterValueToElem(f, elem) {
     return function() {
       let result = f.apply(this, arguments);
 
-      if (!result) return;
+      if (!result) {
+        return;
+      }
 
       elem.innerHTML = result;
 
@@ -249,5 +259,6 @@ let pomodorolock = new PomodoroClock({
   elem: document.querySelector(".pomodoro"),
   notifier: new Notifier(),
   domManipulator: new DomManipulator(),
-  countDown: new CountDown(1000)
+  countDown: new CountDown(1000),
+  shifterValue: new ShifterValue()
 });
