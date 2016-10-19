@@ -38,7 +38,7 @@ class TimeCreater {
       let seconds = result.getSeconds();
 
       return ((hours > 0) ? `${hours}:` : "")
-            + ((minutes > 0) ? `${ self._addLeadingZero(minutes) }:` : "")
+            + ((minutes > 0 || hours > 0) ? `${ self._addLeadingZero(minutes) }:` : "")
             + self._addLeadingZero(seconds);
     }
   }

@@ -11,17 +11,15 @@ class DomManipulator {
     }
   }
 
-  enebleButtons(elem) {
-    let btns = elem.querySelectorAll(".btn");
+  enebleElems(elem, cssClass) {
+    let elems = elem.querySelectorAll(`.${cssClass}`);
 
-    btns.forEach(btn => btn.classList.remove("disabled"));
+    elems.forEach(el => el.classList.remove("disabled"));
   }
 
-  disableButtons(elem) {
-    let btns = elem.querySelectorAll(".btn");
+  disableElems(elem, cssClass) {
+    let elems = elem.querySelectorAll(`.${cssClass}`);
 
-    btns.forEach(btn => btn.classList.add("disabled"));
+    elems.forEach(el => el.classList.add("disabled"));
   }
 }
-
-

@@ -11,6 +11,7 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
   let breakLength = 5;
   let isTikTak = false;
   let timersStack = [];
+  let timers = {};
   let countDownId;
   let isDone = false;
   let requestPermission = notifier.requestPermission();
@@ -19,6 +20,9 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
   let doneAudio = new Audio('https://notificationsounds.com/soundfiles/35051070e572e47d2c26c241ab88307f/file-74_bells-message.mp3');
   let startAudio = new Audio('https://notificationsounds.com/soundfiles/ab817c9349cf9c4f6877e1894a1faa00/file-sounds-767-arpeggio.mp3');
   let pauseAudio = new Audio('https://notificationsounds.com/soundfiles/d61e4bbd6393c9111e6526ea173a7c8b/file-4f_here-I-am.mp3');
+
+
+  elem.addEventListener("click", actionManager);
 
 
   showTime.innerHTML = timeLength;
@@ -31,15 +35,17 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
 
 
   let BreakRun = timeCreater.getTimeGeneratorFunction(breakLength);
-  BreakRun = getTimeAndBindToTimer(BreakRun, showCounterTime, "Break");
+  BreakRun = createTikFunction(BreakRun, showCounterTime, "Break");
   let timerBreak = countDown.init(BreakRun, countDownId);
   timerBreak.name = "timerBreak";
+  timers.timerBreak = timerBreak;
 
   // поставил после break потому что в колбек передается таймер timerBreak
   let TimeRun = timeCreater.getTimeGeneratorFunction(timeLength);
-  TimeRun = getTimeAndBindToTimer(TimeRun, showCounterTime, "Session", timerBreakCallback, "Session is over");
+  TimeRun = createTikFunction(TimeRun, showCounterTime, "Session", timerBreakCallback, "Session is over");
   let timerTime = countDown.init(TimeRun, countDownId);
   timerTime.name = "timerTime";
+  timers.timerTime = timerTime;
 
   timersStack.push(timerTime);
 
@@ -59,12 +65,11 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
     domManipulator.changeTheme("break", "time", showCounterMain);
   }
 
-  elem.addEventListener("click", getElement);
+  function actionManager(event) {
+    let target = event.target;
+    let currentTarget = event.currentTarget;
 
-  function getElement(event) {
-    var target = event.target;
-
-    while(target !== event.currentTarget) {
+    while(target !== currentTarget) {
 
       if (target.classList.contains('js-plus-time')) {
         if (isTikTak) {
@@ -74,11 +79,7 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
         timeLength = setTimeLengthForShowTime(timeLength, "up");
 
         resetTimeTime();
-
-        if (timersStack[0].name === "timerTime") {
-          timersStack.pop();
-          timersStack.push(timerTime);
-        }
+        changeTimerInStack("timerTime");
 
         return;
       }
@@ -91,11 +92,7 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
         timeLength = setTimeLengthForShowTime(timeLength, "down");
 
         resetTimeTime();
-
-        if (timersStack[0].name === "timerTime") {
-          timersStack.pop();
-          timersStack.push(timerTime);
-        }
+        changeTimerInStack("timerTime");
 
         return;
       }
@@ -108,11 +105,7 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
         breakLength = setTimeLengthForShowBreak(breakLength, "up");
 
         resetTimeBreak();
-
-        if (timersStack[0].name === "timerBreak") {
-          timersStack.pop();
-          timersStack.push(timerBreak);
-        }
+        changeTimerInStack("timerBreak");
 
         return;
       }
@@ -125,11 +118,7 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
         breakLength = setTimeLengthForShowBreak(breakLength, "down");
 
         resetTimeBreak();
-
-        if (timersStack[0].name === "timerBreak") {
-          timersStack.pop();
-          timersStack.push(timerBreak);
-        }
+        changeTimerInStack("timerBreak");
 
         return;
       }
@@ -143,13 +132,13 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
           pauseAudio.play();
           isTikTak = timersStack[0].stop();
           showCounterMain.classList.add("stopped");
-          domManipulator.enebleButtons(elem);
+          domManipulator.enebleElems(elem, "btn");
         } else {
           startAudio.play();
           domManipulator.clearStyles(showCounterBg, "top");
           isTikTak = timersStack[0].start();
           showCounterMain.classList.remove("stopped");
-          domManipulator.disableButtons(elem);
+          domManipulator.disableElems(elem, "btn");
         }
 
         return;
@@ -159,18 +148,27 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
     }
   }
 
+  function changeTimerInStack(timerName) {
+    if (timersStack[0].name === timerName) {
+      timersStack.pop();
+      timersStack.push(timers[timerName]);
+    }
+  }
+
   function resetTimeTime() {
     TimeRun =  timeCreater.getTimeGeneratorFunction(timeLength);
-    TimeRun = getTimeAndBindToTimer(TimeRun, showCounterTime, "Session", timerBreakCallback, "Session is over");
+    TimeRun = createTikFunction(TimeRun, showCounterTime, "Session", timerBreakCallback, "Session is over");
     timerTime = countDown.init(TimeRun, countDownId);
     timerTime.name = "timerTime";
+    timers.timerTime = timerTime;
   }
 
   function resetTimeBreak() {
     BreakRun = timeCreater.getTimeGeneratorFunction(breakLength);
-    BreakRun = getTimeAndBindToTimer(BreakRun, showCounterTime, "Break", timerTimeCallback, "Break is over");
+    BreakRun = createTikFunction(BreakRun, showCounterTime, "Break", timerTimeCallback, "Break is over");
     timerBreak = countDown.init(BreakRun, countDownId);
     timerBreak.name = "timerBreak";
+    timers.timerBreak = timerBreak;
   }
 
   function bindShifterValueToElem(f, elem) {
@@ -187,11 +185,11 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
     }
   }
 
-  function getTimeAndBindToTimer(timeFunc, showerElem, name, callback, message) {
+  function createTikFunction(genTimeFunc, showerElem, periodName, callback, message) {
     return function() {
-      let time = timeFunc.apply(this, arguments);
+      let time = genTimeFunc.apply(this, arguments);
 
-      showCounterName.innerHTML = name;
+      showCounterName.innerHTML = periodName;
 
       if (!time) {
         isDone = true;
@@ -200,8 +198,6 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
         doneAudio.play();
         notifier.notifyMe(message);
 
-        // here may be an event signaling that session is finished
-
         setTimeout(function() {  // here is a delay, before callback will be started
           domManipulator.clearStyles(showCounterBg, "top");
           callback();
@@ -209,16 +205,14 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue,
         }, 1500);
       } else {
         showerElem.innerHTML = time;
-        if (+time < 60) {
+        if (+time.slice(-2) < 60) {
           showCounterBg.style.top =  time * 1.66   + "%";
-          // here will be a function call for final session phase during the last 60 seconds (styling or something else)
         }
       }
 
       return time;
     }
   }
-
 }
 
 let pomodorolock = new PomodoroClock({
