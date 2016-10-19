@@ -1,6 +1,6 @@
 "use strict";
 
-function PomodoroClock(elem) {
+function PomodoroClock({elem, notifier, domManipulator}) {
   let showTime = elem.querySelector(".js-show-time");
   let showBreak = elem.querySelector(".js-show-break");
   let showCounterTime = elem.querySelector(".js-counter-time");
@@ -13,7 +13,9 @@ function PomodoroClock(elem) {
   let timersStack = [];
   let timerId;
   let isDone = false;
-  // let doneAudio = new Audio('sounds/soft-bells.mp3');
+  let requestPermission = notifier.requestPermission();
+
+
   let doneAudio = new Audio('https://notificationsounds.com/soundfiles/35051070e572e47d2c26c241ab88307f/file-74_bells-message.mp3');
   let startAudio = new Audio('https://notificationsounds.com/soundfiles/ab817c9349cf9c4f6877e1894a1faa00/file-sounds-767-arpeggio.mp3');
   let pauseAudio = new Audio('https://notificationsounds.com/soundfiles/d61e4bbd6393c9111e6526ea173a7c8b/file-4f_here-I-am.mp3');
@@ -50,7 +52,7 @@ function PomodoroClock(elem) {
     timersStack.pop();
     timersStack.push(timerTime);
     timerTime.start();
-    changeTheme("time", "break", showCounterMain);
+    domManipulator.changeTheme("time", "break", showCounterMain);
   }
 
   function timerBreakCallback() {
@@ -58,7 +60,7 @@ function PomodoroClock(elem) {
     timersStack.pop();
     timersStack.push(timerBreak);
     timerBreak.start();
-    changeTheme("break", "time", showCounterMain);
+    domManipulator.changeTheme("break", "time", showCounterMain);
   }
 
   elem.addEventListener("click", getElement);
@@ -127,13 +129,13 @@ function PomodoroClock(elem) {
           pauseAudio.play();
           isTikTak = timersStack[0].stop();
           showCounterMain.classList.add("stopped");
-          enebleButtons(elem);
+          domManipulator.enebleButtons(elem);
         } else {
           startAudio.play();
-          clearStyles(showCounterBg, "top");
+          domManipulator.clearStyles(showCounterBg, "top");
           isTikTak = timersStack[0].start();
           showCounterMain.classList.remove("stopped");
-          disableButtons(elem);
+          domManipulator.disableButtons(elem);
         }
 
         return;
@@ -141,18 +143,6 @@ function PomodoroClock(elem) {
 
       target = target.parentNode;
     }
-  }
-
-  function disableButtons(elem) {
-    let btns = elem.querySelectorAll(".btn");
-
-    btns.forEach(btn => btn.classList.add("disabled"));
-  }
-
-  function enebleButtons(elem) {
-    let btns = elem.querySelectorAll(".btn");
-
-    btns.forEach(btn => btn.classList.remove("disabled"));
   }
 
   function resetTimeTime() {
@@ -220,12 +210,12 @@ function PomodoroClock(elem) {
         showerElem.innerHTML = "done";
         showCounterBg.style.top =  "0";
         doneAudio.play();
-        notifyMe(message);
+        notifier.notifyMe(message);
 
         // here may be an event signaling that session is finished
 
         setTimeout(function() {  // here is a delay, before callback will be started
-          clearStyles(showCounterBg, "top");
+          domManipulator.clearStyles(showCounterBg, "top");
           callback();
           isDone = false;
         }, 1500);
@@ -241,17 +231,6 @@ function PomodoroClock(elem) {
     }
   }
 
-  function clearStyles(elem, ...rest) {
-    for (let i = 0; i < rest.length; i++) {
-      elem.style[rest[i]] = "";
-    }
-  }
-
-  function changeTheme(newTheme, oldTeme, elem) {
-    elem.classList.add(newTheme);
-    elem.classList.remove(oldTeme);
-  }
-
   function getMiliseconds(minutes) {
     return minutes * 60 * 1000;
   }
@@ -262,20 +241,6 @@ function PomodoroClock(elem) {
 
     time.setMilliseconds(timeMiliseconds);
     return time;
-  }
-
-  function switcherTimer(timer) {
-    let isRun = false;
-
-    return function () {
-      if (!isRun) {
-        isRun = true;
-        return timer.start();
-      } else {
-        isRun = false;
-        return timer.stop();
-      }
-    }
   }
 
   /*
@@ -309,39 +274,10 @@ function PomodoroClock(elem) {
       stop: stop
     }
   }
-  
-  function notifyMe(message) {
-    // Проверка поддерживаемости браузером уведомлений
-    if (!("Notification" in window)) {
-      alert("This browser does not support desktop notification");
-    }
-
-    // Проверка разрешения на отправку уведомлений
-    else if (Notification.permission === "granted") {
-      // Если разрешено то создаем уведомлений
-      var notification = new Notification(message);
-    }
-
-    // В противном случает мы запрашиваем разрешение
-    else if (Notification.permission !== 'denied') {
-      Notification.requestPermission(function (permission) {
-        // Если пользователь разрешил, то создаем уведомление 
-        if (permission === "granted") {
-          var notification = new Notification(message);
-        }
-      });
-    }
-
-    // В конечном счете если пользователь отказался от получения 
-    // уведомлений, то стоит уважать его выбор и не беспокоить его 
-    // по этому поводу .
-  }Notification.requestPermission();function spawnNotification(theBody,theIcon,theTitle) {
-    var options = {
-        body: theBody,
-        icon: theIcon
-    }
-    var n = new Notification(theTitle,options);
-  }
 }
 
-let pomodorolock = new PomodoroClock(document.querySelector(".pomodoro"));
+let pomodorolock = new PomodoroClock({
+  elem: document.querySelector(".pomodoro"),
+  notifier: new Notifier(),
+  domManipulator: new DomManipulator()
+});
