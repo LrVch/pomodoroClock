@@ -1,6 +1,6 @@
 "use strict";
 
-function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}) {
+function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue, timeCreater}) {
   let showTime = elem.querySelector(".js-show-time");
   let showBreak = elem.querySelector(".js-show-break");
   let showCounterTime = elem.querySelector(".js-counter-time");
@@ -21,10 +21,6 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}
   let pauseAudio = new Audio('https://notificationsounds.com/soundfiles/d61e4bbd6393c9111e6526ea173a7c8b/file-4f_here-I-am.mp3');
 
 
-  const TIME = new Date(1970, 1);
-  TIME.setHours(0, 0, 0, 0);
-
-
   showTime.innerHTML = timeLength;
   showBreak.innerHTML = breakLength;
   showCounterTime.innerHTML = timeLength;
@@ -34,13 +30,13 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}
   let setTimeLengthForShowBreak = bindShifterValueToElem(shifterValue.set, showBreak);
 
 
-  let BreakRun = getTimeMinusOneSecond( getStartTime(TIME, breakLength) );
+  let BreakRun = timeCreater.getTimeGeneratorFunction(breakLength);
   BreakRun = getTimeAndBindToTimer(BreakRun, showCounterTime, "Break");
   let timerBreak = countDown.init(BreakRun, countDownId);
   timerBreak.name = "timerBreak";
 
   // поставил после break потому что в колбек передается таймер timerBreak
-  let TimeRun = getTimeMinusOneSecond( getStartTime(TIME, timeLength) );
+  let TimeRun = timeCreater.getTimeGeneratorFunction(timeLength);
   TimeRun = getTimeAndBindToTimer(TimeRun, showCounterTime, "Session", timerBreakCallback, "Session is over");
   let timerTime = countDown.init(TimeRun, countDownId);
   timerTime.name = "timerTime";
@@ -65,10 +61,10 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}
 
   elem.addEventListener("click", getElement);
 
-  function getElement(e) {
-    var target = e.target;
+  function getElement(event) {
+    var target = event.target;
 
-    while(target !== e.currentTarget) {
+    while(target !== event.currentTarget) {
 
       if (target.classList.contains('js-plus-time')) {
         if (isTikTak) {
@@ -164,14 +160,14 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}
   }
 
   function resetTimeTime() {
-    TimeRun = getTimeMinusOneSecond( getStartTime(TIME, timeLength) );
+    TimeRun =  timeCreater.getTimeGeneratorFunction(timeLength);
     TimeRun = getTimeAndBindToTimer(TimeRun, showCounterTime, "Session", timerBreakCallback, "Session is over");
     timerTime = countDown.init(TimeRun, countDownId);
     timerTime.name = "timerTime";
   }
 
   function resetTimeBreak() {
-    BreakRun = getTimeMinusOneSecond( getStartTime(TIME, breakLength) );
+    BreakRun = timeCreater.getTimeGeneratorFunction(breakLength);
     BreakRun = getTimeAndBindToTimer(BreakRun, showCounterTime, "Break", timerTimeCallback, "Break is over");
     timerBreak = countDown.init(BreakRun, countDownId);
     timerBreak.name = "timerBreak";
@@ -188,24 +184,6 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}
       elem.innerHTML = result;
 
       return result;
-    }
-  }
-
-  function getTimeMinusOneSecond(date) {
-    let d = new Date(date);
-    let result;
-
-    return function() {
-      result = new Date(d.setSeconds(d.getSeconds() - 1));
-
-      if (result.getHours() === 0 &&  result.getMinutes() == 0 && result.getSeconds() === 0) {
-
-        return false;
-      }
-
-      return ((result.getHours() > 0) ? result.getHours() + ":" : "")
-            + ((result.getMinutes() > 0) ? ((result.getMinutes() < 10) ? "0" + result.getMinutes() + ":" : result.getMinutes()  + ":") : "")
-            + ((result.getSeconds() < 10) ? "0" + result.getSeconds() : result.getSeconds());
     }
   }
 
@@ -241,18 +219,6 @@ function PomodoroClock({elem, notifier, domManipulator, countDown, shifterValue}
     }
   }
 
-  function getMiliseconds(minutes) {
-    return minutes * 60 * 1000;
-  }
-
-  function getStartTime(TIME, timeDuration) {
-    let timeMiliseconds = getMiliseconds(timeDuration);
-    let time = new Date(TIME);
-
-    time.setMilliseconds(timeMiliseconds);
-    return time;
-  }
-
 }
 
 let pomodorolock = new PomodoroClock({
@@ -260,5 +226,6 @@ let pomodorolock = new PomodoroClock({
   notifier: new Notifier(),
   domManipulator: new DomManipulator(),
   countDown: new CountDown(1000),
-  shifterValue: new ShifterValue()
+  shifterValue: new ShifterValue(),
+  timeCreater: new TimeCreater()
 });
