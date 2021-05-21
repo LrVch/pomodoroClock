@@ -1,0 +1,236 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Open Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.btn {
+  width: 100%;
+  height: 40%;
+  background: rgba(255,255,255, .1);
+  border: none;
+  border-radius: 2px;
+  font-size: 40px;
+  color: #fff;
+  transition: background .15s, opacity .3s;
+  cursor: pointer;
+}
+
+.btn:active {
+  background: #ff8f6a;
+}
+
+.btn:focus {
+  outline: none;
+}
+
+.btn.disabled,
+.btn.disabled:active,
+.btn.disabled:hover {
+  background: transparent;
+  opacity: .2;
+  cursor: default;
+}
+
+
+.pomodoro,
+.pomodoro__inner,
+.pomodoro__container {
+  width: 100%;
+  height: 100%;
+  background: #6c6aff ;
+}
+
+.pomodoro__inner:before,
+..pomodoro__container:before,
+.pomodoro__inner:after,
+..pomodoro__container:after {
+  content: "";
+  float: none;
+  display: table;
+}
+
+.pomodoro__inner:after,
+..pomodoro__container:after {
+  clear: both;
+}
+
+/* time */
+.pomodoro__time,
+.pomodoro__break {
+  width: 15%;
+  height: 100%;
+  float: left;
+}
+
+.pomodoro__time-show,
+.pomodoro__break-show  {
+  height: 20%;
+  width: 100%;
+  display: table;
+  text-align: center;
+  color: #fff;
+  font-size: 25px;
+}
+
+.pomodoro__time-show-inner,
+.pomodoro__break-show-inner {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.pomodoro__time-show-name,
+.pomodoro__break-show-name {
+  font-size: 18px;
+}
+
+.pomodoro__time-plus {
+
+}
+
+.pomodoro__time-minus {
+
+}
+
+.pomodoro__break-plus {
+
+}
+
+.pomodoro__break-minus {
+
+}
+
+/* counter */
+.pomodoro__counter {
+  width: 70%;
+  height: 100%;
+  float: left;
+  display: table;
+  color: #fff;
+  font-size: 25px;
+}
+
+.pomodoro__counter-inner {
+  position: relative;
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.pomodoro__counter-inner:before {
+  display: block;
+  width: 200px;
+  content: "PomodoroClock <br> by Roman Lonsky";
+  margin: 0 auto;
+  margin-bottom: 20px;
+  margin-top: -20px;
+  /* font-family: 'Dancing Script', cursive; */
+  /* font-style: italic; */
+  font-family: 'Yellowtail', cursive;
+}
+
+.pomodoro__counter-shower {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  border-radius: 50%;
+  z-index: 1;
+  overflow: hidden;
+  transition: background .2s;
+  box-shadow: inset 0 0 0px 6px #fff, 0 0 15px -2px #000;
+  cursor: pointer;
+}
+
+.pomodoro__counter-shower:before {
+  position: absolute;
+  top: 100%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  content: "PAUSE";
+  font-size: 40px;
+  border-radius: 50%;
+  line-height: 200px;
+  background: rgba(0,0,0, .5);
+  box-shadow: inset 0 0 15px 2px #000;
+  transition: all .3s;
+}
+
+.pomodoro__counter-shower-bg {
+  position: absolute;
+  content: "";
+  top: 100%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+}
+
+.pomodoro__counter-name {
+  height: 50%;
+  padding-top: 50px;
+}
+
+.pomodoro__counter-time {
+  height: 50%;
+  font-size: 40px;
+}
+
+.stopped:before {
+  top: 0;
+}
+
+.pomodoro__counter-shower.time {
+  background: #ff8f6a;;
+}
+
+.pomodoro__counter-shower.time .pomodoro__counter-shower-bg {
+  background: #4cff3f;
+}
+
+
+.pomodoro__counter-shower.break {
+  background: #52aeff;
+}
+
+.pomodoro__counter-shower.break .pomodoro__counter-shower-bg {
+  background: #ff2273;
+}
+
+
+@media (min-width: 768px) {
+  .pomodoro {
+    display: table;
+  }
+
+  .pomodoro__inner {
+    display: table-cell;
+    vertical-align: middle;
+  }
+
+  .pomodoro__container {
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+  }
+
+  .btn:hover {
+    background: rgba(255,255,255, .2);
+  }
+
+  .btn:active {
+    background: #ff8f6a;
+  }
+}
